@@ -5,5 +5,5 @@
 1. [Linux](https://github.com/moying12138/My-World/blob/master/Linux_基础命令.md)
 
 2. [数据结构与算法](https://github.com/moying12138/Data_Structure)
-3. [C++](https://github.com/moying12138/My-World/blob/master/C%2B%2B_Learn.md)
+3. [C++](https://github.com/moying12138/My-World/blob/master/c%2B%2B/C%2B%2B_Learn.md)
 
