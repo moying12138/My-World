@@ -105,3 +105,52 @@ case false :
 22. 通常情况下静态成员不能在类内部初始化， 一直也都是这么认为的， `c++prime`中指出， 可以用constexpr修饰变量， 来进行类内部初始化，此时如果不再类外定义， 就代表编译器会在编译阶段，替换成常量(猜得), 因为不能当形参引用传入，具体参考271  
 
 
+### 8 IO类
+> iosteram, istream（从流中读取数据） ostream（向流中输出）,  iostream（读写流）。  
+> 加入w支持wchar_t 类型的宽字符  
+> 标准库使我们能忽略这些不同的类型流之间的差异， 这是通过继承机制实现的。  
+
+#### iostream
+1.  不能拷贝IO对象， 所以IO对象也不能当作形参或者返回类型， 通常用引用方式传递流的对象， 读写一个流会改变其状态， 所以返回的引用不能是const的  
+2.  IO类定义了一些标志和函数来确定流当前的状态， 一个流一旦发生错误， 其上的后续IO操作都会失败， 所以`while(cin >> n)` 会成立， `badbit`表示系统级错误， 如不可恢复的读写错误。 在发生可恢复的错误后， `failbit`被置位， `goodbit`为0， 代表流没有问题， 流到达文件末尾， `eofbit`和`failbit`被置位。 `badbit`和`eofbit`和`failbit`任意一个被置位， 流检测状态的条件会失败， 就会退出`while`循环, **具体函数介绍看c++prime  280**  
+3.  管理条件状态  
+```
+auto old_state = cin.rdstate();          // 记住cin的状态, 函数返回一个iostate值
+cin.clear();                             // 重置cin， 使他有效
+use(cin);                                // 使用cin
+cin.setstate(old_state);                 // 将cin置为原有状态
+
+//带参数的clear（）接受一个iostate值， 表示流的最新状态， 下面的代码将failbit和badbit复位， 其他不变
+cin.clear(cin.rdstate() & ~cin.badbit & ~cin.failbit);
+```
+4.  缓冲区的概念， 没有到强制刷新， 可能不会立即打印， 只是提交到操作系统， 导致缓冲刷新原因：
+- 程序正常结束。  
+- 缓冲区满了。  
+- 使用endl  
+- 在每个输出操作之后， 可以用unitbuf设置流的内部状态， cerrr默认是设置unitbuf的，   
+- 一个输出流可能被关联到另一个流， 这种当读写被关联的流时， 会刷新  
+- 类似endl的还有fflush， 和ends， 前者刷新， 不填加任何字符， 后者加入空格，后刷新缓冲区  
+- cout << unitbuf; 所有输出都立即刷新缓冲区， cout << nounitbuf；取消  
+5. tie 可以设置关联的流， 两个版本， 一个版本不带参数， 返回指向输出流的指针， 如果本对象关联到一个输出流， 则返回的就是这个流的指针， 否则返回空。 tie的第二个版本，接受一个指向ostream的指针， 将自己关联到ostream， 即 `x.tie(&o)`将x 关联到输出流o  
+```
+即可以将istream关联到ostream, 也可以将ostream关联到另一个ostream.
+cin.tie(&cout);
+ostream *old_tream = cin.tie(nullptr);
+cin.tie(&cerr);
+cin.tie(old_tream);             
+一个流不能同时关联多个输出流， 但是一个输出流可以被多个流关联
+```
+
+#### fsteam
+操作和iostream类似， 但是他有自己的函数和操作  
+1. open和close， 定义一个空的文件流对象， 调用open来将它与文件关联起来，如果调用open失败， 则failbit被置位， 所以一般加上if(out)来判断是否成功打开, 成功goodbit会被设置成true;  
+2.  当一个fstream对象被销毁时， close会被自动调用， 但是最好加上close。  
+3.  文件模式， 以out模式打开默认会丢弃所有数据， 追加加上app模式。默认是trunc截断模式。更多参考`c++prime286`  
+
+
+
+#### sstream
+除了继承来的操作， 还有s.str(), 返回保存的string的拷贝。 strm.str(s) 将string   s拷贝到strm中， 返回void
+没啥看得， 用到时参考c++prime   288  
+介绍一个getline(流对象， str);   从流对象中读取一行到str中  
+
